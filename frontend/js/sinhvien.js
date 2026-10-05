@@ -1,0 +1,1 @@
+export default {title:'Sinh viên',singular:'sinh viên',columns:['ma_sinh_vien','ho_ten','email','lop','nganh'],fields:{ma_sinh_vien:'Mã sinh viên',ho_ten:'Họ tên',email:'Email',lop:'Lớp',nganh:'Ngành'}};

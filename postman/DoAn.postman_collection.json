@@ -1,0 +1,1058 @@
+{
+  "info": {
+    "name": "Quản lý đồ án SOA",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Run in order: login admin, CRUD and business rules, logout. Demo account credentials can be changed in collection variables."
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000/api"
+    },
+    {
+      "key": "username",
+      "value": "admin"
+    },
+    {
+      "key": "password",
+      "value": "Demo@12345"
+    },
+    {
+      "key": "auth_token",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (pm.info.requestName === 'Thống kê') { const stamp = Date.now(); pm.collectionVariables.set('student_code', 'PMSV' + stamp); pm.collectionVariables.set('topic_code', 'PMDT' + stamp); }"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Đăng nhập admin",
+      "request": {
+        "method": "POST",
+        "auth": {
+          "type": "noauth"
+        },
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/auth/login",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "if(pm.response.code === 200) pm.collectionVariables.set('auth_token',pm.response.json().data.access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thống kê",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dashboard"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thêm sinh viên",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_sinh_vien\": \"{{student_code}}\",\n  \"ho_ten\": \"Sinh viên kiểm thử\",\n  \"email\": \"{{student_code}}@example.com\",\n  \"lop\": \"CNTT01\",\n  \"nganh\": \"Công nghệ thông tin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));",
+              "if(pm.response.code === 201) pm.collectionVariables.set('student_id',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Danh sách sinh viên",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chi tiết sinh viên",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien/{{student_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tìm sinh viên",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien?q={{student_code}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sửa sinh viên",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien/{{student_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_sinh_vien\": \"{{student_code}}\",\n  \"ho_ten\": \"Sinh viên đã cập nhật\",\n  \"email\": \"{{student_code}}@example.com\",\n  \"lop\": \"CNTT01\",\n  \"nganh\": \"Công nghệ thông tin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thêm đề tài",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_de_tai\": \"{{topic_code}}\",\n  \"ten_de_tai\": \"Đề tài kiểm thử SOA\",\n  \"mo_ta\": \"Postman smoke test\",\n  \"giang_vien\": \"GV kiểm thử\",\n  \"so_luong_sinh_vien\": 1,\n  \"trang_thai\": \"con_trong\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));",
+              "if(pm.response.code === 201) pm.collectionVariables.set('topic_id',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Danh sách đề tài",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chi tiết đề tài",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai/{{topic_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tìm và lọc đề tài",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai?q={{topic_code}}&trang_thai=con_trong"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sửa đề tài",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai/{{topic_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_de_tai\": \"{{topic_code}}\",\n  \"ten_de_tai\": \"Đề tài kiểm thử SOA\",\n  \"mo_ta\": \"Cập nhật\",\n  \"giang_vien\": \"GV kiểm thử\",\n  \"so_luong_sinh_vien\": 1,\n  \"trang_thai\": \"con_trong\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sinh viên không tồn tại",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": 999999999,\n  \"de_tai_id\": \"{{topic_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đề tài không tồn tại",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": \"{{student_id}}\",\n  \"de_tai_id\": 999999999\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404', () => pm.response.to.have.status(404));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dữ liệu không hợp lệ",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien",
+        "body": {
+          "mode": "raw",
+          "raw": "{}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422', () => pm.response.to.have.status(422));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đăng ký đề tài",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": \"{{student_id}}\",\n  \"de_tai_id\": \"{{topic_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));",
+              "if(pm.response.code === 201) pm.collectionVariables.set('registration_id',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Danh sách đăng ký",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chi tiết đăng ký",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky/{{registration_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đăng ký của sinh viên",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky?sinh_vien_id={{student_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sinh viên đăng ký đề tài",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky?de_tai_id={{topic_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đăng ký trùng",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": \"{{student_id}}\",\n  \"de_tai_id\": \"{{topic_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thêm sinh viên thứ hai",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_sinh_vien\": \"{{student_code}}B\",\n  \"ho_ten\": \"Sinh viên kiểm thử\",\n  \"email\": \"{{student_code}}B@example.com\",\n  \"lop\": \"CNTT01\",\n  \"nganh\": \"Công nghệ thông tin\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));",
+              "if(pm.response.code === 201) pm.collectionVariables.set('student2_id',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đề tài hết chỗ",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": \"{{student2_id}}\",\n  \"de_tai_id\": \"{{topic_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Duyệt đăng ký",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky/{{registration_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trang_thai\": \"da_duyet\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Huỷ đăng ký",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky/{{registration_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"trang_thai\": \"da_huy\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ngừng nhận",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai/{{topic_id}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ma_de_tai\": \"{{topic_code}}\",\n  \"ten_de_tai\": \"Đề tài kiểm thử SOA\",\n  \"mo_ta\": \"Postman smoke test\",\n  \"giang_vien\": \"GV kiểm thử\",\n  \"so_luong_sinh_vien\": 1,\n  \"trang_thai\": \"ngung_nhan\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đề tài ngừng nhận",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sinh_vien_id\": \"{{student2_id}}\",\n  \"de_tai_id\": \"{{topic_id}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409', () => pm.response.to.have.status(409));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Xoá đăng ký",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/dangky/{{registration_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Xoá đề tài",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/detai/{{topic_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Xoá sinh viên",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien/{{student_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Xoá sinh viên thứ hai",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/sinhvien/{{student2_id}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('JSON envelope', () => pm.expect(pm.response.json().success).to.be.a('boolean'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Đăng xuất",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{base_url}}/auth/logout"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  }
+}

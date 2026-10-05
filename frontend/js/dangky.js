@@ -1,0 +1,1 @@
+export default {title:'Đăng ký',singular:'đăng ký',columns:['sinh_vien_id','de_tai_id','ngay_dang_ky','trang_thai'],fields:{sinh_vien_id:'Sinh viên',de_tai_id:'Đề tài',ngay_dang_ky:'Ngày đăng ký',trang_thai:'Trạng thái'},statuses:{cho_duyet:'Chờ duyệt',da_duyet:'Đã duyệt',tu_choi:'Từ chối',da_huy:'Đã huỷ'}};

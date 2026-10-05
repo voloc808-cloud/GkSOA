@@ -1,0 +1,1 @@
+export default {title:'Đề tài',singular:'đề tài',columns:['ma_de_tai','ten_de_tai','giang_vien','so_luong_sinh_vien','trang_thai'],fields:{ma_de_tai:'Mã đề tài',ten_de_tai:'Tên đề tài',mo_ta:'Mô tả',giang_vien:'Giảng viên',so_luong_sinh_vien:'Sức chứa',trang_thai:'Trạng thái'},statuses:{con_trong:'Còn chỗ',da_du:'Đã đủ',ngung_nhan:'Ngừng nhận'}};
