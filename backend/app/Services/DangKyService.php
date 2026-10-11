@@ -51,6 +51,10 @@ class DangKyService {
             if ($moving && DangKy::where('sinh_vien_id',$row->sinh_vien_id)->where('de_tai_id',$targetId)->where('id','<>',$id)->exists()) throw new HttpException(409,'Sinh viên đã có đăng ký tại đề tài đích.');
             if (in_array($status,self::ACTIVE) && ($moving || !in_array($row->trang_thai,self::ACTIVE))) $this->checkTopicCapacity($target);
             $row->update(['trang_thai'=>$status,'de_tai_id'=>$targetId]);
+            if ($moving || $status !== 'da_duyet') {
+                $row->diem_huong_dan = $row->diem_phan_bien = $row->diem_bao_ve = null;
+                $row->save();
+            }
             $this->sync($topic); if ($moving) $this->sync($target);
             return $row->fresh();
         });

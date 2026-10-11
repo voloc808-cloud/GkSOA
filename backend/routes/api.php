@@ -10,6 +10,10 @@ if (in_array(env('SERVICE_MODULE','all'),['all','auth','sinhvien'])) {
     $router->put('/api/users/{id:[0-9]+}','UserController@update');
     $router->delete('/api/users/{id:[0-9]+}','UserController@destroy');
 }
+if (in_array(env('SERVICE_MODULE','all'), ['all','dangky'])) {
+    $router->put('/api/dangky/{id:[0-9]+}/diem', 'DangKyController@grades');
+    $router->delete('/api/dangky/{id:[0-9]+}/diem', 'DangKyController@clearGrades');
+}
 foreach (['sinhvien'=>'SinhVien','detai'=>'DeTai','dangky'=>'DangKy'] as $path=>$controller) {
     if (!in_array(env('SERVICE_MODULE','all'),['all',$path])) continue;
     $router->get('/api/'.$path,$controller.'Controller@index');

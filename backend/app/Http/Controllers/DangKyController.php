@@ -18,4 +18,15 @@ class DangKyController extends \Laravel\Lumen\Routing\Controller {
         return response()->json(['success'=>true,'data'=>$this->service->update($id,$data)]);
     }
     public function destroy($id) { $this->service->delete($id); return response()->json(['success'=>true,'message'=>'Đã xoá thành công.']); }
+    public function grades(Request $request, $id) {
+        $data = $this->validate($request, [
+            'diem_huong_dan'=>'required|numeric|between:0,10|regex:/^\d+(\.\d{1,2})?$/',
+            'diem_phan_bien'=>'required|numeric|between:0,10|regex:/^\d+(\.\d{1,2})?$/',
+            'diem_bao_ve'=>'required|numeric|between:0,10|regex:/^\d+(\.\d{1,2})?$/',
+        ]);
+        return response()->json(['success'=>true,'data'=>(new \App\Services\DiemService())->save($id, $data)]);
+    }
+    public function clearGrades($id) {
+        return response()->json(['success'=>true,'data'=>(new \App\Services\DiemService())->save($id, ['diem_huong_dan'=>null,'diem_phan_bien'=>null,'diem_bao_ve'=>null])]);
+    }
 }

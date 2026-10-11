@@ -1,6 +1,7 @@
 import {api} from './api.js';
 import {authenticate,can,user} from './auth.js';
 import {renderUsers} from './users.js';
+import {openGrades,canGrade} from './diem.js';
 import sinhvien from './sinhvien.js';
 import detai from './detai.js';
 import dangky from './dangky.js';
@@ -9,6 +10,8 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
 let page='dashboard',rows=[],students=[],topics=[],version=0;
 function notice(message){$('#notice').textContent=message;$('#notice').hidden=!message;}
 function display(key,value,cfg){
+ if(key.startsWith('diem_'))return value==null?'Chưa chấm':Number(value).toFixed(2);
+ if(key==='ket_qua')return esc({chua_cham:'Chưa chấm',dat:'Đạt',khong_dat:'Không đạt'}[value]||value);
  if(key==='trang_thai')return '<span class="badge">'+esc(cfg.statuses[value]||value)+'</span>';
  if(key==='sinh_vien_id'){const row=students.find(x=>x.id===value);return esc(row?row.ma_sinh_vien+' · '+row.ho_ten:value);}
  if(key==='de_tai_id'){const row=topics.find(x=>x.id===value);return esc(row?row.ma_de_tai+' · '+row.ten_de_tai:value);}
@@ -50,10 +53,21 @@ async function loadRows(){
    const row=rows[i];if(!can(resource,'register',row))return;
    const button=document.createElement('button');button.textContent='Đăng ký';button.dataset.action='register';button.dataset.id=row.id;tr.lastElementChild.append(button);
   });
+  if(resource==='dangky')$('#table').querySelectorAll('tbody tr').forEach((tr,i)=>{
+   const row=rows[i];if(!canGrade(row))return;
+   for(const [action,label] of [['grade','Chấm điểm'],...(row.diem_tong_ket==null?[]:[['clear-grade','Xóa điểm']])]){
+    const button=document.createElement('button');button.className='secondary';button.textContent=label;button.dataset.action=action;button.dataset.id=row.id;tr.lastElementChild.append(button);
+   }
+  });
   $('#table').onclick=async e=>{
    const button=e.target.closest('button');if(!button)return;
    const id=Number(button.dataset.id),action=button.dataset.action;
    try{
+    if(action==='grade')return await openGrades(id,loadRows);
+    if(action==='clear-grade'){
+     if(!confirm('Xóa cả ba điểm của đăng ký này?'))return;
+     button.disabled=true;await api('/dangky/'+id+'/diem','DELETE');notice('');await loadRows();return;
+    }
     if(action==='register')return await openEditor(undefined,rows.find(r=>r.id===id));
     if(action==='edit')return await openEditor(rows.find(r=>r.id===id));
     if(action==='detail')return await showDetail(id);
@@ -66,6 +80,7 @@ async function loadRows(){
  }catch(e){if(current===version)notice(e.message);}
 }
 async function showDetail(id){
+ $('#fields').oninput=null;
  const resource=page,cfg=configs[resource];
  const row=await api('/'+resource+'/'+id);
  $('#modal-title').textContent='Chi tiết '+cfg.singular;
@@ -78,6 +93,7 @@ async function showDetail(id){
  $('#editor').onsubmit=e=>e.preventDefault();$('#form-error').textContent='';$('#save').hidden=true;$('#modal').showModal();
 }
 async function openEditor(row,selectedTopic){
+ $('#fields').oninput=null;
  const resource=selectedTopic?'dangky':page,cfg=configs[resource];
  const lecturers=resource==='detai'&&user.role==='admin'?(await api('/users')).filter(a=>a.role==='giangvien'):[];
  if(resource==='dangky'&&!row)[students,topics]=await Promise.all([api('/sinhvien'),api('/detai')]);

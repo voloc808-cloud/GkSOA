@@ -11,6 +11,7 @@ class Authenticate {
   $user=$session?User::find($session->user_id):null;
   if (!$user || !in_array($user->role,['admin','giangvien','sinhvien'])) throw new HttpException(401,'Vui lòng đăng nhập lại.');
   $request->attributes->set('actor',$user);
+  if (preg_match('#^api/dangky/[0-9]+/diem$#', $request->path()) && !in_array($user->role, ['admin','giangvien'])) $this->deny();
   if (preg_match('#^api/(sinhvien|detai|dangky|users)(?:/([0-9]+))?$#',$request->path(),$parts)) {
    $resource=$parts[1];$id=$parts[2]??null;$method=$request->method();
    if ($resource==='users' && $user->role!=='admin') $this->deny();

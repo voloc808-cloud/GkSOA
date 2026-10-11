@@ -159,5 +159,7 @@ Import `database/quanly_doan.sql` vào database trống thay vì migrate + seed.
 
 ## Kiến trúc và phạm vi
 
+Có chức năng tính điểm đồ án (hướng dẫn 30%, phản biện 30%, bảo vệ 40%, quy tắc demo). Xem [hướng dẫn tính điểm](docs/grading.md) để migrate, nhập điểm, kiểm thử và cập nhật báo cáo.
+
 Xem [docs/architecture.md](docs/architecture.md) để biết sơ đồ SOA và ranh giới transaction.
 Hệ thống có đăng nhập và ba vai trò admin, giảng viên, sinh viên. Xem [hướng dẫn đăng nhập và phân quyền](docs/auth-roles.md) để dùng tài khoản mẫu, cấp tài khoản và kiểm tra bằng Postman. Auth JWT cũ vẫn được giữ riêng.
